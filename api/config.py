@@ -1,4 +1,3 @@
-import os
 
 # Database Configs
 DATABASE_CONNECTION_URI = 'sqlite:////code/data/forecast.db'

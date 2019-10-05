@@ -1,23 +1,23 @@
 import json
-import requests
 
 from datetime import datetime
 
 from flask import request
 
 from . import create_app
-from .models import Forecast, db
-from .config import API_ADV_TOKEN
-from .database import create_update_instance, get_queryset
+from .database import create_update_forecast, max_temperature_inrange, preciptation_average_inrange
+from .services import get_api_advisor_data
 
-from sqlalchemy import desc, func
-from sqlalchemy.sql import label
 
 app = create_app()
 
 
 @app.route('/cidade', methods=['GET'])
 def update_forecast_database():
+    """
+    Save the Forecast information retrieved 
+    from API Advisor on database
+    """
     city_id = request.args.get('id')
 
     if not city_id:
@@ -28,38 +28,38 @@ def update_forecast_database():
             }
         ), 400
     
-    url = 'http://apiadvisor.climatempo.com.br/api/v1/forecast/locale/{0}/days/15?token={1}'.format(
-        city_id,
-        API_ADV_TOKEN
-    )
+    request_data, status_code = get_api_advisor_data(city_id)
 
-    response = requests.get(url)
-    response_json = response.json()
+    if status_code != 200:
+        return json.dumps(request_data), status_code
 
-    if response.status_code != 200:
-        return json.dumps(response_json), response.status_code
+    city = request_data['name']
+    state = request_data['state']
+    country = request_data['country'] 
 
-    city = response_json['name']
-    state = response_json['state']
-    country = response_json['country'] 
-
-    for forect in response_json['data']:
-        create_update_instance(
-            Forecast,
+    for forect in request_data['data']:
+        create_update_forecast(
             city=city,
             state=state,
             country=country,
-            date=datetime.strptime(forect['date'], "%Y-%m-%d").date(),
+            date=datetime.strptime(
+                forect['date'], "%Y-%m-%d").date(),
             rain_probab=forect['rain']['probability'],
             rain_prect=forect['rain']['precipitation'],
             max_temp=forect['temperature']['max'],
             min_temp=forect['temperature']['min'],
         )
 
-    return json.dumps({'message': 'Forecast data updated'}), 200
+    response = json.dumps({'message': 'Forecast data updated'})
+    return response, 200
+
 
 @app.route('/analise', methods=['GET'])
 def get_forecast_analysis():
+    """
+    Get Forecast Analyisis with max temperature 
+    and rain precipitation average
+    """
     initial_date = request.args.get('data_inicial')
     final_date = request.args.get('data_final')
 
@@ -77,26 +77,17 @@ def get_forecast_analysis():
     final_date = datetime.strptime(
         final_date, '%Y-%m-%d').date()
 
-    queryset = Forecast.query.filter(
-            func.DATE(Forecast.date) >= initial_date
-        ).filter(
-            func.DATE(Forecast.date) <= final_date)
+    city_max, temp_max =  max_temperature_inrange(
+        initial_date, final_date)
 
-    city_max_temp = queryset.order_by(desc(Forecast.max_temp)).first()
-
-    city_prect_avg = db.session.query(
-        Forecast, label(
-            'rain_prect_avg', func.avg(Forecast.rain_prect)
-        )).filter(
-            func.DATE(Forecast.date) >= initial_date
-        ).filter(
-            func.DATE(Forecast.date) <= final_date
-        ).group_by(Forecast.city).all()    
+    city_prect_avg = preciptation_average_inrange(
+        initial_date, final_date
+    )  
 
     response = json.dumps({
         'max_temperature': {
-            'city': city_max_temp.city,
-            'temperature': city_max_temp.max_temp
+            'city': city_max,
+            'temperature': temp_max
         },
         'preciptation_average': [{
             'city': city_avg[0].city, 
@@ -104,4 +95,4 @@ def get_forecast_analysis():
         } for city_avg in city_prect_avg],       
     }, ensure_ascii=False)
 
-    return response
+    return response, 200
