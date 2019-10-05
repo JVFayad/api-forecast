@@ -12,8 +12,6 @@ def create_instance(model, **kwargs):
     commit_operations()
 
 def create_update_instance(model, **kwargs):
-    import pdb; pdb.set_trace()
-
     instance = model.query.filter(
             model.city == kwargs.get('city')
         ).filter(
