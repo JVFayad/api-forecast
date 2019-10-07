@@ -5,6 +5,9 @@ db = flask_sqlalchemy.SQLAlchemy()
 
 
 class Forecast(db.Model):
+    """
+    Forecast Model
+    """
     __tablename__ = 'forecast'
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(50), nullable=False)

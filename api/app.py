@@ -67,7 +67,7 @@ def get_forecast_analysis():
         return json.dumps(
             {
                 'error': True, 
-                'detail': 'Missing parameters (?data_inicial=<DATA_INICIAL>&data_final=<DATA_FINAL>)'
+                'detail': 'Missing date parameters'
             }
         ), 400
 
@@ -81,8 +81,7 @@ def get_forecast_analysis():
         initial_date, final_date)
 
     city_prect_avg = preciptation_average_inrange(
-        initial_date, final_date
-    )  
+        initial_date, final_date)  
 
     response = json.dumps({
         'max_temperature': {

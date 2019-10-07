@@ -30,10 +30,12 @@ def create_update_forecast(**kwargs):
     """
     model = Forecast
 
-    # If forecast with city and date passed
+    # If forecast with city, state and date passed
     # already exists, info is updated
     instance = model.query.filter(
             model.city == kwargs.get('city')
+        ).filter(
+            model.state == kwargs.get('state')
         ).filter(
             func.DATE(model.date) == kwargs.get('date')
         ).first()
