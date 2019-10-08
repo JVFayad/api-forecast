@@ -1,6 +1,6 @@
 # api-forecast
 
-<h1>API de Previsão do Tempo e Análise</h1>
+<h1>API de Previsão e Análise do Tempo</h1>
 
 Esta API foi desenvolvida utilizando basicamente:
 ```
