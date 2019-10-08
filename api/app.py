@@ -28,6 +28,7 @@ def update_forecast_database():
             }
         ), 400
     
+    # Call API consult service
     request_data, status_code = get_api_advisor_data(city_id)
 
     if status_code != 200:
@@ -37,6 +38,8 @@ def update_forecast_database():
     state = request_data['state']
     country = request_data['country'] 
 
+    # Call database function to
+    # create/update forecast data
     for forect in request_data['data']:
         create_update_forecast(
             city=city,
@@ -71,18 +74,22 @@ def get_forecast_analysis():
             }
         ), 400
 
+    # Format date
     initial_date = datetime.strptime(
-        initial_date, '%Y-%m-%d').date()
+        initial_date, '%d-%m-%Y').date()
 
     final_date = datetime.strptime(
-        final_date, '%Y-%m-%d').date()
+        final_date, '%d-%m-%Y').date()
 
+    # Call database functions to get
+    # analysis result
     city_max, temp_max =  max_temperature_inrange(
         initial_date, final_date)
 
     city_prect_avg = preciptation_average_inrange(
         initial_date, final_date)  
 
+    # Format response
     response = json.dumps({
         'max_temperature': {
             'city': city_max,

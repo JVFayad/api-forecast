@@ -17,7 +17,7 @@ Comandos importantes para inicialização (utilizando docker-compose):
 docker-compose up
 ```
 
-A API tem um funcionamento simples, com dois endpoints, um para buscar e atualizar os dados de previsão do tempo no banco,e o outro para fazer uma análise destes dados já cadastrados, através dos dados de temperatura máxima e média de precipitação de chuva (por cidade).
+A API tem um funcionamento simples e possui dois endpoints, um para buscar (em API externa) e cadastrar os dados de previsão do tempo, e o outro para fazer uma análise destes mesmos dados, retornando as informações de: temperatura máxima e média de precipitação de chuva (por cidade).
 
 Algumas observações:
 
@@ -36,3 +36,5 @@ __GET__ /cidade?id=<ID_CIDADE>
 
 - <h3>Retornar Análise dos Dados</h3>
 __GET__ /analise?data_inicial=<DATA_INICIAL>&data_final=<DATA_FINAL>
+
+Detalhe: Os parâmetros de data devem ser passados no formato "DD-MM-YYYY" (Ex: 07-10-2019)
